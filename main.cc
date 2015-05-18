@@ -9,6 +9,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alut.h>
+
 #include "src/common.h"
 #include "src/mesh.h"
 #include "src/shader.h"
@@ -222,6 +226,61 @@ mat_block_face(int x, int y, int z, int face)
     default:
         return glm::mat4(1);    /* unreachable */
     }
+}
+
+
+ALCdevice *audiodevice;
+ALCcontext *audiocontext;
+ALuint soundtrack_source;  /* soundtrack source at listener */
+ALuint soundtrack_buffer;
+
+/*
+ * Exit with the OpenAL error message.
+ */
+void audio_exit_err()
+{
+    ALCenum error = alGetError();
+    if (error == AL_NO_ERROR) {
+        errx(1, "Bailing: audio_errx() called with no OpenAL error (AL_NO_ERROR)");
+    } else {
+        const ALchar *message = alGetString(error);
+        errx(1, "%s", message);
+    }
+}
+
+
+void audio_setup()
+{
+    audiodevice = alcOpenDevice(NULL);
+    if (!audiodevice) {
+        printf("TODO: helpful OpenAL errors here.\n");
+        errx(1, "Cannot open audio device.\n");
+    }
+
+    audiocontext = alcCreateContext(audiodevice, NULL);
+    if (!alcMakeContextCurrent(audiocontext)) {
+        audio_exit_err();
+    }
+
+    /* Spin up the music */
+
+    /* init soundtrack_source */
+    ALboolean loop = AL_TRUE;
+    alGenSources((ALuint)1, &soundtrack_source);
+    alSourcei(soundtrack_source, AL_SOURCE_RELATIVE, AL_TRUE);
+    alSource3f(soundtrack_source, AL_POSITION, 0, 0, 0);
+    alSourcei(soundtrack_source, AL_LOOPING, loop);
+
+    /* init soundtrack_buffer */
+    ALsizei size, freq;
+    ALenum format;
+    ALvoid *data;
+    alutLoadWAVFile((ALbyte*)"music/soundtrack.wav", &format, &data, &size, &freq, &loop);
+    alGenBuffers((ALuint)1, &soundtrack_buffer);
+    alBufferData(soundtrack_buffer, format, data, size, freq);
+    alSourcei(soundtrack_source, AL_BUFFER, soundtrack_buffer);
+
+    alSourcePlay(soundtrack_source);
 }
 
 
@@ -522,6 +581,9 @@ init()
     /* put some crap in the lightfield */
     memset(light->data, 0, sizeof(light->data));
     light->upload();
+
+    /* Make noises with OpenAL */
+    audio_setup();
 }
 
 

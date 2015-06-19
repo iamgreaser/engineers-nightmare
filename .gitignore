@@ -2,6 +2,8 @@ CMake*
 *.cmake
 Makefile
 nightmare
+nightmare-server
+nightmare-test-client
 *.ninja*
 scratch
 *.out
@@ -221,3 +223,6 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+
+# ctags file
+.tags

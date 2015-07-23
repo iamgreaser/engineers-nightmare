@@ -122,9 +122,9 @@ ship_space::get_chunk_containing(int block_x, int block_y, int block_z)
 {
     int chunk_x, chunk_y, chunk_z;
 
-    split_coord(block_x, NULL, &chunk_x);
-    split_coord(block_y, NULL, &chunk_y);
-    split_coord(block_z, NULL, &chunk_z);
+    split_coord(block_x, nullptr, &chunk_x);
+    split_coord(block_y, nullptr, &chunk_y);
+    split_coord(block_z, nullptr, &chunk_z);
 
     return this->get_chunk(chunk_x, chunk_y, chunk_z);
 }
@@ -137,11 +137,12 @@ ship_space::get_chunk(int chunk_x, int chunk_y, int chunk_z)
 {
     glm::ivec3 v(chunk_x, chunk_y, chunk_z);
 
-    if( this->chunks.count(v) ){
-        return this->chunks[v];
+    auto f = chunks.find(v);
+    if (f != chunks.end()) {
+        return (*f).second;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 /* given the x, y, z of a block and the surface we are interested in,
@@ -733,9 +734,9 @@ ship_space::ensure_block(int block_x, int block_y, int block_z)
 {
     int chunk_x, chunk_y, chunk_z;
 
-    split_coord(block_x, NULL, &chunk_x);
-    split_coord(block_y, NULL, &chunk_y);
-    split_coord(block_z, NULL, &chunk_z);
+    split_coord(block_x, nullptr, &chunk_x);
+    split_coord(block_y, nullptr, &chunk_y);
+    split_coord(block_z, nullptr, &chunk_z);
 
     /* guarantee we have the size we need */
     this->ensure_chunk(chunk_x, chunk_y, chunk_z);

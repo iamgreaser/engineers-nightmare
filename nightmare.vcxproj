@@ -141,6 +141,7 @@ copy /y $(SolutionDir)..\sdl2_image\lib\x86\*.dll $(OutputPath)</Command>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);Bullet2FileLoader.lib;Bullet3Collision.lib;Bullet3Common.lib;Bullet3Dynamics.lib;Bullet3Geometry.lib;Bullet3OpenCL_clew.lib;BulletCollision.lib;BulletDynamics.lib;BulletSoftBody.lib;LinearMath.lib;libepoxy-0.lib;libepoxy.dll.a;freetype.lib;libfreetype.dll.a;assimp.lib;libconfig.lib;mman.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
       <Command>copy /y $(SolutionDir)..\assimp\bin\Release\*.dll $(OutputPath)
@@ -187,6 +188,7 @@ copy /y $(SolutionDir)..\sdl2_image\lib\x86\*.dll $(OutputPath)</Command>
     <ClInclude Include="src\mesh.h" />
     <ClInclude Include="src\physics.h" />
     <ClInclude Include="src\player.h" />
+    <ClInclude Include="src\scopetimer.h" />
     <ClInclude Include="src\settings.h" />
     <ClInclude Include="src\shader.h" />
     <ClInclude Include="src\ship_space.h" />

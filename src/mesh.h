@@ -7,6 +7,7 @@ struct hw_mesh {
     GLuint vbo;
     GLuint ibo;
     GLuint vao;
+    GLuint num_vertices;
     GLuint num_indices;
 };
 

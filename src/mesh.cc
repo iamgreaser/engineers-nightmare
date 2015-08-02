@@ -107,9 +107,12 @@ upload_mesh(sw_mesh *mesh)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->num_indices * sizeof(unsigned), mesh->indices, GL_STATIC_DRAW);
 
     ret->num_indices = mesh->num_indices;
+    ret->num_vertices = mesh->num_vertices;
 
-    printf("upload_mesh: %p num_indices=%d vram_size=%.1fKB\n", ret,
-            ret->num_indices, (mesh->num_vertices * sizeof(vertex) + mesh->num_indices * sizeof(unsigned)) / 1024.0f);
+    printf("upload_mesh: %p num_vertices=%d num_indices=%d vb_vram_size=%.1fKB ib_vram_size=%.1fKB\n",
+            ret, ret->num_vertices, ret->num_indices,
+            mesh->num_vertices * sizeof(vertex) / 1024.0f,
+            mesh->num_indices * sizeof(unsigned) / 1024.0f);
 
     return ret;
 }

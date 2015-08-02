@@ -9,6 +9,7 @@
 
 #include <epoxy/gl.h>
 #include <algorithm>
+#include <functional>
 
 #include <unordered_map>
 
@@ -1071,8 +1072,7 @@ struct menu_state : game_state
 
 struct menu_settings_state : game_state
 {
-    typedef void item_handler(void);
-    typedef std::tuple<char const *, char const *, item_handler *> menu_item;
+    typedef std::tuple<char const *, char const *, std::function<void()>> menu_item;
     std::vector<menu_item> items;
     int selected = 0;
 
@@ -1086,7 +1086,7 @@ struct menu_settings_state : game_state
     menu_settings_state() {
         mouse_invert_mi = items.size();
         items.push_back(menu_item(invert_mouse_text, "",
-            []{ toggle_mouse_invert(); }));
+            [this]{ toggle_mouse_invert(); }));
             // ^^ Not real keen on requiring these to be static
 
         items.push_back(
@@ -1098,7 +1098,7 @@ struct menu_settings_state : game_state
             []{ set_game_state(create_menu_state()); }));
     }
 
-    static void toggle_mouse_invert() {
+    void toggle_mouse_invert() {
     // ^^ Not real keen on requiring these to be static
         game_settings.input.mouse_invert *= -1;
     }

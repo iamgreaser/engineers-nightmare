@@ -19,11 +19,10 @@
 texture_atlas::texture_atlas()
     : tex(0), x(0), y(0), h(0)
 {
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8, TEXT_ATLAS_WIDTH, TEXT_ATLAS_HEIGHT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glCreateTextures(GL_TEXTURE_2D, 1, &tex);
+    glTextureStorage2D(tex, 1, GL_R8, TEXT_ATLAS_WIDTH, TEXT_ATLAS_HEIGHT);
+    glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTextureParameteri(tex, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     buf = new unsigned char[TEXT_ATLAS_WIDTH * TEXT_ATLAS_HEIGHT];
 }
@@ -60,8 +59,7 @@ texture_atlas::add_bitmap(unsigned char *src, int pitch, unsigned width, unsigne
 void
 texture_atlas::upload()
 {
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, TEXT_ATLAS_WIDTH, TEXT_ATLAS_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, buf);
+    glTextureSubImage2D(tex, 0, 0, 0, TEXT_ATLAS_WIDTH, TEXT_ATLAS_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, buf);
 }
 
 
@@ -109,20 +107,24 @@ text_renderer::text_renderer(char const *font, int size)
 
     atlas->upload();
 
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    glCreateVertexArrays(1, &vao);
 
-    glGenBuffers(1, &bo);
-    glBindBuffer(GL_ARRAY_BUFFER, bo);
+    /* setup vertex format */
+    glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, offsetof(text_vertex, x));
+    glVertexArrayAttribFormat(vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(text_vertex, u));
+    glVertexArrayAttribFormat(vao, 2, 3, GL_FLOAT, GL_FALSE, offsetof(text_vertex, r));
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(text_vertex), (GLvoid const *)offsetof(text_vertex, x));
+    glEnableVertexArrayAttrib(vao, 0);
+    glEnableVertexArrayAttrib(vao, 1);
+    glEnableVertexArrayAttrib(vao, 2);
 
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(text_vertex), (GLvoid const *)offsetof(text_vertex, u));
+    glVertexArrayAttribBinding(vao, 0, 0);
+    glVertexArrayAttribBinding(vao, 1, 0);
+    glVertexArrayAttribBinding(vao, 2, 0);
 
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(text_vertex), (GLvoid const *)offsetof(text_vertex, r));
+    /* create a bo to work with */
+    glCreateBuffers(1, &bo);
+    glVertexArrayVertexBuffer(vao, 0, bo, 0, sizeof(text_vertex));
 
     printf("Loaded font %s at size %d\n", font, size);
 }
@@ -192,16 +194,14 @@ text_renderer::measure(char const *str, float *x, float *y)
 void
 text_renderer::upload()
 {
-    glBindBuffer(GL_ARRAY_BUFFER, bo);
-
     /* Exact-fit is pretty lousy as a growth strategy, but oh well */
     if (verts.size() > bo_capacity) {
-        glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(text_vertex), &verts[0], GL_STREAM_DRAW);
+        glNamedBufferData(bo, verts.size() * sizeof(text_vertex), &verts[0], GL_STREAM_DRAW);
         bo_capacity = verts.size();
         bo_vertex_count = verts.size();
     }
     else {
-        glBufferSubData(GL_ARRAY_BUFFER, 0, verts.size() * sizeof(text_vertex), &verts[0]);
+        glNamedBufferSubData(bo, 0, verts.size() * sizeof(text_vertex), &verts[0]);
         bo_vertex_count = verts.size();
     }
 }

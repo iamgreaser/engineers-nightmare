@@ -86,25 +86,30 @@ upload_mesh(sw_mesh *mesh)
 {
     hw_mesh *ret = new hw_mesh;
 
-    glGenVertexArrays(1, &ret->vao);
-    glBindVertexArray(ret->vao);
+    glCreateVertexArrays(1, &ret->vao);
 
-    glGenBuffers(1, &ret->vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, ret->vbo);
-    glBufferData(GL_ARRAY_BUFFER, mesh->num_vertices * sizeof(vertex), mesh->verts, GL_STATIC_DRAW);
+    /* Setup vertex format */
+    glVertexArrayAttribFormat(ret->vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(vertex, x));
+    glVertexArrayAttribIFormat(ret->vao, 1, 1, GL_UNSIGNED_INT, offsetof(vertex, mat));
+    glVertexArrayAttribFormat(ret->vao, 2, 4, GL_FLOAT, GL_FALSE, offsetof(vertex, nx));
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (GLvoid const *)offsetof(vertex, x));
+    glVertexArrayAttribBinding(ret->vao, 0, 0);
+    glVertexArrayAttribBinding(ret->vao, 1, 0);
+    glVertexArrayAttribBinding(ret->vao, 2, 0);
 
-    glEnableVertexAttribArray(1);
-    glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, sizeof(vertex), (GLvoid const *)offsetof(vertex, mat));
+    glEnableVertexArrayAttrib(ret->vao, 0);
+    glEnableVertexArrayAttrib(ret->vao, 1);
+    glEnableVertexArrayAttrib(ret->vao, 2);
 
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), (GLvoid const *)offsetof(vertex, nx));
+    /* Setup actual vertex data */
+    glCreateBuffers(1, &ret->vbo);
+    glCreateBuffers(1, &ret->ibo);
 
-    glGenBuffers(1, &ret->ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ret->ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->num_indices * sizeof(unsigned), mesh->indices, GL_STATIC_DRAW);
+    glNamedBufferData(ret->vbo, mesh->num_vertices * sizeof(vertex), mesh->verts, GL_STATIC_DRAW);
+    glNamedBufferData(ret->ibo, mesh->num_indices * sizeof(unsigned), mesh->indices, GL_STATIC_DRAW);
+
+    glVertexArrayElementBuffer(ret->vao, ret->ibo);
+    glVertexArrayVertexBuffer(ret->vao, 0, ret->vbo, 0, sizeof(vertex));
 
     ret->num_indices = mesh->num_indices;
 

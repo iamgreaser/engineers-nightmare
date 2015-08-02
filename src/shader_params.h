@@ -10,9 +10,8 @@ struct shader_params
 
     shader_params() : bo(0)
     {
-        glGenBuffers(1, &bo);
-        glBindBuffer(GL_UNIFORM_BUFFER, bo);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(T), NULL, GL_DYNAMIC_DRAW);
+        glCreateBuffers(1, &bo);
+        glNamedBufferData(bo, sizeof(T), NULL, GL_DYNAMIC_DRAW);
     }
 
     ~shader_params() {
@@ -20,9 +19,7 @@ struct shader_params
     }
 
     void upload() {
-        /* bind to nonindexed binding point */
-        glBindBuffer(GL_UNIFORM_BUFFER, bo);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(T), &val);
+        glNamedBufferSubData(bo, 0, sizeof(T), &val);
     }
 
     void bind(GLuint index) {

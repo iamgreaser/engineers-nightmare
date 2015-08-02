@@ -423,6 +423,14 @@ init()
     if (!epoxy_has_gl_extension("GL_ARB_texture_storage"))
         errx(1, "No support for ARB_texture_storage\n");
 
+    /* Check for ARB_vertex_attrib_binding */
+    if (!epoxy_has_gl_extension("GL_ARB_vertex_attrib_binding"))
+        errx(1, "No support for ARB_vertex_attrib_binding\n");
+
+    /* Check for ARB_direct_state_access */
+    if (!epoxy_has_gl_extension("GL_ARB_direct_state_access"))
+        errx(1, "No support for ARB_direct_state_access\n");
+
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);         /* pointers given by other libs may not be aligned */
     glEnable(GL_DEPTH_TEST);
 

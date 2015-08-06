@@ -154,9 +154,88 @@ mesher_init()
 
 
 void
+emit_mesh_lump(std::vector<vertex> &verts, std::vector<unsigned> &indices, std::vector<hw_mesh *> &meshes)
+{
+    /* wrap the vectors in a temporary sw_mesh */
+    sw_mesh m;
+    m.verts = &verts[0];
+    m.indices = &indices[0];
+    m.num_vertices = verts.size();
+    m.num_indices = indices.size();
+
+    meshes.push_back(upload_mesh(&m));
+
+    indices.clear();
+    verts.clear();
+}
+
+#define MAX_MESH_LUMP_VERTICES  65536
+
+
+void
 chunk::prepare_render(int x, int y, int z)
 {
     if (this->render_chunk.valid)
+        return;     // nothing to do here.
+
+    std::vector<vertex> verts;
+    std::vector<unsigned> indices;
+
+    std::vector<hw_mesh *> meshes;
+
+    for (int k = 0; k < CHUNK_SIZE; k++)
+        for (int j = 0; j < CHUNK_SIZE; j++)
+            for (int i = 0; i < CHUNK_SIZE; i++) {
+                block *b = this->blocks.get(i, j, k);
+
+                if (b->type == block_support) {
+                    // TODO: block detail, variants, types, surfaces
+                    if (scaffold_sw->num_vertices + verts.size() > MAX_MESH_LUMP_VERTICES)
+                        emit_mesh_lump(verts, indices, meshes);
+
+                    stamp_at_offset(&verts, &indices, scaffold_sw, glm::vec3(i, j, k), 1);
+                }
+
+                for (int surf = 0; surf < 6; surf++) {
+                    if (b->surfs[surf] != surface_none) {
+                        if (surfs_sw[surf]->num_vertices > MAX_MESH_LUMP_VERTICES)
+                            emit_mesh_lump(verts, indices, meshes);
+
+                        stamp_at_offset(&verts, &indices, surfs_sw[surf], glm::vec3(i, j, k),
+                                surface_type_to_material[b->surfs[surf]]);
+                    }
+                }
+            }
+
+    if (verts.size()) {
+        emit_mesh_lump(verts, indices, meshes);
+    }
+
+    /* TODO: we can be a LOT smarter about reusing BO memory etc. */
+    if (this->render_chunk.meshes) {
+        for (auto i = 0u; i < this->render_chunk.num_meshes; i++) {
+            free_mesh(this->render_chunk.meshes[i]);
+            delete this->render_chunk.meshes[i];
+        }
+
+        delete [] this->render_chunk.meshes;
+    }
+
+    this->render_chunk.num_meshes = meshes.size();
+    this->render_chunk.meshes = new hw_mesh * [meshes.size()];
+
+    for (auto i = 0u; i < meshes.size(); i++) {
+        this->render_chunk.meshes[i] = meshes[i];
+    }
+
+    this->render_chunk.valid = true;
+}
+
+
+void
+chunk::prepare_phys(int x, int y, int z)
+{
+    if (this->render_chunk.phys_valid)
         return;     // nothing to do here.
 
     std::vector<vertex> verts;
@@ -169,16 +248,20 @@ chunk::prepare_render(int x, int y, int z)
 
                 if (b->type == block_support) {
                     // TODO: block detail, variants, types, surfaces
+
                     stamp_at_offset(&verts, &indices, scaffold_sw, glm::vec3(i, j, k), 1);
                 }
 
                 for (int surf = 0; surf < 6; surf++) {
                     if (b->surfs[surf] != surface_none) {
+
                         stamp_at_offset(&verts, &indices, surfs_sw[surf], glm::vec3(i, j, k),
                                 surface_type_to_material[b->surfs[surf]]);
                     }
                 }
             }
+
+    this->render_chunk.phys_valid = true;
 
     /* wrap the vectors in a temporary sw_mesh */
     sw_mesh m;
@@ -186,15 +269,6 @@ chunk::prepare_render(int x, int y, int z)
     m.indices = &indices[0];
     m.num_vertices = verts.size();
     m.num_indices = indices.size();
-
-    // TODO: try to reuse memory
-    if (this->render_chunk.mesh) {
-        free_mesh(this->render_chunk.mesh);
-        delete this->render_chunk.mesh;
-    }
-
-    this->render_chunk.mesh = upload_mesh(&m);
-    this->render_chunk.valid = true;
 
     build_static_physics_mesh(&m,
                               &this->render_chunk.phys_mesh,

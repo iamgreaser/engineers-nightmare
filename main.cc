@@ -396,6 +396,7 @@ prepare_chunks()
                 chunk *ch = ship->get_chunk(i, j, k);
                 if (ch) {
                     ch->prepare_render(i, j, k);
+                    ch->prepare_phys(i, j, k);
                 }
             }
         }
@@ -933,7 +934,9 @@ update()
                     per_object->val.world_matrix = mat_position(
                                 (float)i * CHUNK_SIZE, (float)j * CHUNK_SIZE, (float)k * CHUNK_SIZE);
                     per_object->upload();
-                    draw_mesh(ch->render_chunk.mesh);
+                    for (auto m = 0; m < ch->render_chunk.num_meshes; m++) {
+                        draw_mesh(ch->render_chunk.meshes[m]);
+                    }
                 }
             }
         }

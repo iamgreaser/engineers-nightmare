@@ -15,9 +15,10 @@ class btCollisionShape;
 class btRigidBody;
 
 struct render_chunk {
-    hw_mesh *mesh = nullptr;
+    hw_mesh **meshes = nullptr;
+    unsigned num_meshes = 0;
     bool valid = false;
-
+    bool phys_valid = false;
 
     btTriangleMesh *phys_mesh = nullptr;
     btCollisionShape *phys_shape = nullptr;
@@ -46,6 +47,7 @@ struct chunk {
     std::vector<entity *> entities;
 
     void prepare_render(int x, int y, int z);
+    void prepare_phys(int x, int y, int z);
 };
 
 /* must be called once before the mesher can be used */

@@ -48,6 +48,7 @@ struct remove_surface_tool : tool
 
         bl->surfs[index] = surface_none;
         ship->get_chunk_containing(rc->x, rc->y, rc->z)->render_chunk.valid = false;
+        ship->get_chunk_containing(rc->x, rc->y, rc->z)->render_chunk.phys_valid = false;
 
         /* cause the other side to exist */
         block *other_side = ship->get_block(rc->px, rc->py, rc->pz);
@@ -58,6 +59,7 @@ struct remove_surface_tool : tool
         else {
             other_side->surfs[index ^ 1] = surface_none;
             ship->get_chunk_containing(rc->px, rc->py, rc->pz)->render_chunk.valid = false;
+            ship->get_chunk_containing(rc->px, rc->py, rc->pz)->render_chunk.phys_valid = false;
         }
 
         /* remove any ents using the surface */

@@ -60,9 +60,11 @@ struct add_surface_tool : tool
 
             bl->surfs[index] = this->st;
             ship->get_chunk_containing(rc->x, rc->y, rc->z)->render_chunk.valid = false;
+            ship->get_chunk_containing(rc->x, rc->y, rc->z)->render_chunk.phys_valid = false;
 
             other_side->surfs[index ^ 1] = this->st;
             ship->get_chunk_containing(rc->px, rc->py, rc->pz)->render_chunk.valid = false;
+            ship->get_chunk_containing(rc->px, rc->py, rc->pz)->render_chunk.phys_valid = false;
 
             mark_lightfield_update(rc->x, rc->y, rc->z);
             mark_lightfield_update(rc->px, rc->py, rc->pz);

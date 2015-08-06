@@ -66,8 +66,7 @@ texture_atlas::upload()
 void
 texture_atlas::bind(int texunit)
 {
-    glActiveTexture(GL_TEXTURE0 + texunit);
-    glBindTexture(GL_TEXTURE_2D, tex);
+    glBindTextureUnit(texunit, tex);
 }
 
 

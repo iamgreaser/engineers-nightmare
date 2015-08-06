@@ -12,8 +12,7 @@ struct light_field {
 
     void bind(int texunit)
     {
-        glActiveTexture(GL_TEXTURE0 + texunit);
-        glBindTexture(GL_TEXTURE_3D, texobj);
+        glBindTextureUnit(texunit, texobj);
     }
 
     void upload()

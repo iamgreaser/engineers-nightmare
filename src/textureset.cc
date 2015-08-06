@@ -28,8 +28,7 @@ texture_set::texture_set(GLenum target, int dim, int array_size)
 void
 texture_set::bind(int texunit)
 {
-    glActiveTexture(GL_TEXTURE0 + texunit);
-    glBindTexture(target, texobj);
+    glBindTextureUnit(texunit, texobj);
 }
 
 
